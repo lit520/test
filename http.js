@@ -38,33 +38,49 @@ const server = http.createServer(async (req, res) => {
             if (req.method === 'POST' && url.pathname === '/api/add') {
                 const user = JSON.parse(body);
                 const [rows] = await connection.execute('INSERT INTO user (name,age) VALUES (?,?)', [user.name, user.age]);
-                res.writeHead(201, { 'Content-Type': 'application/json;charset=utf-8' });
+                res.writeHead(200, { 'Content-Type': 'application/json;charset=utf-8' });
                 res.end(JSON.stringify({ id: rows.insertId, name: user.name }));
             } else if (req.method === 'GET' && url.pathname === '/api/query') {
                 const [rows] = await connection.execute('SELECT id, name FROM user');
                 res.writeHead(200, { 'Content-Type': 'application/json;charset=utf-8' });
                 res.end(JSON.stringify(rows));
-            } else if (req.method === 'PUT' && url.pathname.startsWith('/api/update/')) {
+            } else if (req.method === 'POST' && url.pathname.startsWith('/api/update/')) {
                 const userId = parseInt(url.pathname.split('/')[3], 10);
                 const user = JSON.parse(body);
                 await connection.execute('UPDATE user SET name = ? WHERE id = ?', [user.name, userId]);
-                res.writeHead(204, { 'Content-Type': 'application/json;charset=utf-8' }); // No Content  
-                res.end('更新完成');
+                res.writeHead(200, { 'Content-Type': 'application/json;charset=utf-8' }); // No Content  
+                res.end({
+                    code: 1001,
+                    data: {},
+                    message: 'success'
+                });
             } else if (req.method === 'DELETE' && url.pathname.startsWith('/api/delete/')) {
                 const userId = parseInt(url.pathname.split('/')[3], 10);
                 await connection.execute('DELETE FROM user WHERE id = ?', [userId]);
-                res.writeHead(204, { 'Content-Type': 'application/json;charset=utf-8' }); // No Content  
-                res.end('删除完成');
+                res.writeHead(200, { 'Content-Type': 'application/json;charset=utf-8' }); // No Content  
+                res.end({
+                    code: 1001,
+                    data: {},
+                    message: 'success'
+                });
             } else {
                 res.writeHead(404);
-                res.end('Not Found');
+                res.end({
+                    code: 1002,
+                    data: {},
+                    message: 'Error'
+                });
             }
 
             await connection.end();
         } catch (err) {
             console.error(err);
             res.writeHead(500);
-            res.end('Internal Server Error');
+            res.end({
+                code: 1002,
+                data: {},
+                message: 'Error'
+            });
         }
     });
 });
