@@ -1,16 +1,17 @@
 const path = require('path');
 const { VueLoaderPlugin } = require('vue-loader');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
     mode: 'development',
-    entry: './src/http.js',
+    entry: './src/main.js',
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: 'bundle.js'
     },
     module: {
         rules: [
-            // 示例：处理.vue文件  
+            // 示例：处理.vue文件
             {
                 test: /\.vue$/,
                 loader: 'vue-loader'
@@ -25,10 +26,10 @@ module.exports = {
         ]
     },
     plugins: [
-        new VueLoaderPlugin()
+        new VueLoaderPlugin(),
+        new HtmlWebpackPlugin({
+            title: 'My App',
+            template: 'html/index.html'
+        })
     ],
-    devServer: {
-        contentBase: './dist',
-        hot: true
-    }
 }
