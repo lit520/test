@@ -16,7 +16,31 @@ const dbConfig = {
 // 异步函数来连接数据库
 async function connectDB() {
     return await mysql.createConnection(dbConfig);
+
 }
+let pool;
+
+(async () => {
+    try {
+        pool = await mysql.createPool(dbConfig);
+        console.log('Connection pool initialized successfully');
+    } catch (err) {
+        console.error('Failed to initialize connection pool:', err);
+        process.exit(1); // 退出程序，因为连接池无法初始化
+    }
+})();
+
+// 封装一个用于执行SQL查询的函数，返回Promise
+async function query(sql, args) {
+    try {
+        const [rows, fields] = await pool.execute(sql, args);
+        return [rows, fields];
+    } catch (err) {
+        console.error('Database error:', err);
+        throw err; // 将错误抛出，以便在调用处捕获
+    }
+}
+
 
 // HTTP服务器
 const server = http.createServer(async (req, res) => {
@@ -77,7 +101,7 @@ const server = http.createServer(async (req, res) => {
                     code: 1002,
                     data: {},
                     message: 'Error'
-                });
+                }));
             }
 
             //await connection.release();
