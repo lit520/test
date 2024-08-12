@@ -1,15 +1,12 @@
 <template>
-  <TableSql />
+  <div>
+    <router-view />
+  </div>
 </template>
 
 <script>
-import TableSql from "./components/TableSql.vue";
-
 export default {
   name: "App",
-  components: {
-    TableSql,
-  },
 };
 </script>
 
