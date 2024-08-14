@@ -30,7 +30,7 @@
               type="text"
               class="form-control"
               name="pwd"
-              placeholder="默认密码246810"
+              placeholder="请输入密码"
               v-model="pwd"
             />
           </div>
@@ -48,8 +48,8 @@ export default {
   name: "Login",
   data() {
     return {
-      mobile: "13888888888", // 初始手机号
-      pwd: "246810", // 初始密码
+      mobile: "", // 初始手机号
+      pwd: "", // 初始密码
       loginMessage: "",
       loginSuccess: false,
       loginError: false,
@@ -57,27 +57,41 @@ export default {
     };
   },
   methods: {
-    handleLogin() {
-      this.showAlert = true; // 显示警告框
-      if (this.mobile === "13888888888" && this.pwd === "246810") {
-        // 可选：显示登录成功消息
-        this.loginSuccess = true;
-        this.loginError = false;
-        this.loginMessage = "登录成功，正在跳转...";
-        setTimeout(() => {
-          this.showAlert = false; // 隐藏警告框
-          this.$router.push("/home"); // 使用Vue Router进行页面跳转
-        }, 1500);
-      } else {
-        // 显示登录失败消息
+    async handleLogin() {
+      this.showAlert = false; // 先隐藏警告框
+      try {
+        const response = await axios.post("/api/login", {
+          phone: this.mobile,
+          pwd: this.pwd,
+        });
+        if (response.data.success) {
+          // 假设后端返回了token和success字段
+          this.loginSuccess = true;
+          this.loginError = false;
+          this.loginMessage = "登录成功，正在跳转...";
+          // 存储token
+          localStorage.setItem("token", response.data.token);
+          setTimeout(() => {
+            this.showAlert = false;
+            this.$router.push("/home"); // 跳转到主页
+          }, 1500);
+        } else {
+          this.loginSuccess = false;
+          this.loginError = true;
+          this.loginMessage = "手机号或密码错误";
+          setTimeout(() => {
+            this.showAlert = false;
+          }, 2000);
+        }
+      } catch (error) {
+        console.error("登录失败:", error);
         this.loginSuccess = false;
         this.loginError = true;
-        this.loginMessage = "手机号或密码错误";
+        this.loginMessage = "登录服务器出错，请稍后再试";
         setTimeout(() => {
-          this.showAlert = false; // 隐藏警告框
+          this.showAlert = false;
         }, 2000);
       }
-      console.log("登录手机号:", this.mobile, "密码:", this.pwd);
     },
   },
 };

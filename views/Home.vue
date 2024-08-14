@@ -60,7 +60,7 @@ export default {
         console.error("Error adding user:", error);
       }
     },
-    async updateUser(userId) {
+    async updateUser(id) {
       try {
         await axios.post(`http://localhost:3000/api/update/${id}`, {
           name: "更新后的名字",
@@ -70,7 +70,7 @@ export default {
         console.error("Error updating user:", error);
       }
     },
-    async deleteUser(userId) {
+    async deleteUser(id) {
       try {
         await axios.delete(`http://localhost:3000/api/delete/${id}`);
         this.fetchUsers();

@@ -1,13 +1,15 @@
 const express = require('express');
-const router = express.Router();
+const bodyParser = require('body-parser');
+const jwt = require('jsonwebtoken');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
+const router = express.Router();
 
 // 数据库连接配置
 const dbConfig = {
     host: '127.0.0.1',
     user: 'root',
-    password: '123456',
+    pwd: '123456',
     database: 'test',
     waitForConnections: true,
     connectionLimit: 10,
@@ -45,36 +47,34 @@ async function query(sql, args) {
 // 允许跨域请求  
 router.use(cors());
 
-// 设置JSON响应类型  
-router.use(express.json());
+// 使用body-parser中间件  
+router.use(bodyParser.json());
 
 // 路由处理  
-router.options('/api/*', (req, res) => {
+router.options('/login', (req, res) => {
     res.sendStatus(200);
 });
 
-router.post('/api/add', async (req, res) => {
-    const { name, age } = req.body;
-    const [rows] = await query('INSERT INTO user (name,age) VALUES (?,?)', [name, age]);
-    res.json({ id: rows.insertId, name, age });
-});
-
-router.get('/api/query', async (req, res) => {
-    const [rows] = await query('SELECT id, name FROM user');
-    res.json(rows);
-});
-
-router.post('/api/update/:id', async (req, res) => {
-    const { id } = req.params;
-    const { name } = req.body;
-    await query('UPDATE user SET name = ? WHERE id = ?', [name, id]);
-    res.json({ code: 1001, data: {}, message: 'success' });
-});
-
-router.delete('/api/delete/:id', async (req, res) => {
-    const { id } = req.params;
-    await query('DELETE FROM user WHERE id = ?', [id]);
-    res.json({ code: 1001, data: {}, message: 'success' });
+// 登录路由  
+router.post('/login', async (req, res) => {
+    const { phone, pwd } = req.body;
+    try {
+        // 使用连接池获取数据库连接并执行查询  
+        const [rows] = await pool.query(
+            'SELECT * FROM user WHERE phone = ? AND pwd = ?',
+            [phone, pwd]
+        );
+        if (rows.length === 0) {
+            return res.status(404).send('User Not Found!!!');
+        }
+        // user表中id字段作为用户的主键  
+        const userId = rows[0].id;
+        // 生成JWT Token  
+        const token = jwt.sign({ userId }, 'secret_key', { expiresIn: '1d' });
+        res.json({ token });
+    } catch (error) {
+        res.status(500).send('Server error');
+    }
 });
 
 // 处理未找到路由的情况  

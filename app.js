@@ -1,13 +1,13 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-//const loginRouter = require('./routes/login');
+const loginRouter = require('./routes/login');
 const homeRouter = require('./routes/home');
 
 // 使用路由  
 app.use(cors());
-//app.use('/login', loginRouter);
-app.use('/home', homeRouter);
+app.use('/login', loginRouter);
+app.use('/', homeRouter);
 
 // 设置静态文件目录（如果有）  
 // app.use(express.static('public'));  
